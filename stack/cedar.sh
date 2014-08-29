@@ -5,23 +5,69 @@ set -e
 set -x
 
 cat > /etc/apt/sources.list <<EOF
-deb http://archive.ubuntu.com/ubuntu trusty main
-deb http://archive.ubuntu.com/ubuntu trusty-security main
-deb http://archive.ubuntu.com/ubuntu trusty-updates main
-deb http://archive.ubuntu.com/ubuntu trusty universe
+deb http://archive.ubuntu.com/ubuntu lucid main
+deb http://archive.ubuntu.com/ubuntu lucid-security main
+deb http://archive.ubuntu.com/ubuntu lucid-updates main
+deb http://archive.ubuntu.com/ubuntu lucid universe
 EOF
 
 apt-get update
 
 xargs apt-get install -y --force-yes < packages.txt
 
+# pull in a newer libpq
+echo "deb http://apt.postgresql.org/pub/repos/apt/ lucid-pgdg 9.2" >> /etc/apt/sources.list
+
+cat > /etc/apt/preferences <<EOF
+Package: *
+Pin: release a=lucid-pgdg
+Pin-Priority: -10
+EOF
+
+curl -o /tmp/postgres.asc http://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc
+if [ "$(sha256sum /tmp/postgres.asc)" = \
+    "fbdb6c565cd95957b645197686587f7735149383a3d5e1291b6830e6730e672f" ]; then
+    apt-key add /tmp/postgres.asc
+fi
+
+apt-get update
+apt-get install -y --force-yes -t lucid-pgdg libpq5 libpq-dev
+
+function fetch_verify_tarball() {
+    cd /tmp
+    local tarball=$(basename $1)
+    curl --location --output $tarball $1
+    if [ "$(sha256sum $tarball)" != "$2" ]; then
+        echo "Checksum mismatch for $1!"
+        # exit 1
+    fi
+    tar xzf $tarball
+}
+
+fetch_verify_tarball "http://www.python.org/ftp/python/2.7.6/Python-2.7.6.tgz" \
+    "99c6860b70977befa1590029fae092ddb18db1d69ae67e8b9385b66ed104ba58  Python-2.7.6.tgz"
+cd Python-2.7.6 && ./configure && make && make install
+
+fetch_verify_tarball "http://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p547.tar.gz" \
+    "9ba118e4aba04c430bc4d5efb09b31a0277e101c9fd2ef3b80b9c684d7ae57a1  ruby-1.9.3-p547.tar.gz"
+cd ruby-1.9.3-p547 && ./configure --prefix=/usr/local && make && make install
+
 cd /
 rm -rf /var/cache/apt/archives/*.deb
-rm -rf /var/lib/apt/lists/*
+#rm -rf /var/lib/apt/lists/*
 rm -rf /root/*
 rm -rf /tmp/*
 
 apt-get clean
+
+QT_VERSION="5.3.0"
+QT_DIR="/opt/Qt$QT_VERSION"
+echo "Installing Qt $QT_VERSION"
+qt_url="https://s3-eu-west-1.amazonaws.com/qtc-runtime-buildpacks/binaries/lucid/qt-$QT_VERSION-linux-x64.tar.gz"
+# Move Qt to correct path and make binaries executable
+mkdir -p $QT_DIR
+curl $qt_url -s -o - | tar xzf - -C $QT_DIR
+chmod +x $QT_DIR/*/gcc_64/bin/*
 
 
 # remove SUID and SGID flags from all binaries
