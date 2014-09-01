@@ -60,16 +60,6 @@ rm -rf /tmp/*
 
 apt-get clean
 
-QT_VERSION="5.3.0"
-QT_DIR="/opt/Qt$QT_VERSION"
-echo "Installing Qt $QT_VERSION"
-qt_url="https://s3-eu-west-1.amazonaws.com/qtc-runtime-buildpacks/binaries/lucid/qt-$QT_VERSION-linux-x64.tar.gz"
-# Move Qt to correct path and make binaries executable
-mkdir -p $QT_DIR
-curl $qt_url -s -o - | tar xzf - -C $QT_DIR
-chmod +x $QT_DIR/*/gcc_64/bin/*
-
-
 # remove SUID and SGID flags from all binaries
 function pruned_find() {
   find / -type d \( -name dev -o -name proc \) -prune -o $@ -print
