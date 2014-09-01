@@ -1,5 +1,5 @@
-FROM ubuntu:trusty
-MAINTAINER progrium "progrium@gmail.com"
+FROM ubuntu:lucid
+MAINTAINER "Jari Kolehmainen" "jari.kolehmainen@digia.com"
 
 RUN mkdir /tmp/build
 ADD ./stack/ /tmp/build
