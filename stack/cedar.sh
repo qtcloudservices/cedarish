@@ -11,12 +11,12 @@ deb http://archive.ubuntu.com/ubuntu lucid-updates main
 deb http://archive.ubuntu.com/ubuntu lucid universe
 EOF
 
-apt-get update
+apt-get update && apt-get upgrade -y --force-yes
 
 xargs apt-get install -y --force-yes < packages.txt
 
 # pull in a newer libpq
-echo "deb http://apt.postgresql.org/pub/repos/apt/ lucid-pgdg 9.2" >> /etc/apt/sources.list
+echo "deb http://apt.postgresql.org/pub/repos/apt/ lucid-pgdg 9.3" >> /etc/apt/sources.list
 
 cat > /etc/apt/preferences <<EOF
 Package: *
