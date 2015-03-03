@@ -26,7 +26,7 @@ EOF
 
 curl -o /tmp/postgres.asc http://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc
 if [ "$(sha256sum /tmp/postgres.asc)" = \
-    "fbdb6c565cd95957b645197686587f7735149383a3d5e1291b6830e6730e672f" ]; then
+    "97144ef157a5f51592680367cc450c0c065d0c4a4503ff2a76d3e293b5b04a03" ]; then
     apt-key add /tmp/postgres.asc
 fi
 
